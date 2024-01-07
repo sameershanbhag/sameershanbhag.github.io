@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "c19659957ca6413a3ef6eb932383606e",
+    "revision": "073d5496e2d2bca68135e9d8f45889ea",
     "url": "./index.html"
   },
   {
-    "revision": "0d793488e300dd2d29f2",
+    "revision": "ddce05ca99d755fc5771",
     "url": "./static/css/main.f4008a90.chunk.css"
   },
   {
-    "revision": "c2fa87949d6fe584304d",
-    "url": "./static/js/2.26fd989b.chunk.js"
+    "revision": "44e33f18a9ae4d0b988c",
+    "url": "./static/js/2.f25b032b.chunk.js"
   },
   {
-    "revision": "0d793488e300dd2d29f2",
-    "url": "./static/js/main.da81fdd0.chunk.js"
+    "revision": "ddce05ca99d755fc5771",
+    "url": "./static/js/main.51085276.chunk.js"
   },
   {
     "revision": "19b6961df5f71a29d5cd",
@@ -58,6 +58,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "89edfafeb98123f6c51225abd7040d22",
     "url": "./static/media/animated_sameer.89edfafe.png"
+  },
+  {
+    "revision": "203bc9337ab2dafb5c2ca3a2c39ebf64",
+    "url": "./static/media/aws_cpc.203bc933.png"
   },
   {
     "revision": "058eca4cbdc03a1dad9a6bb943ac7831",
