@@ -16,22 +16,22 @@
     <meta name="author" content="Sameer" />
     <meta name="application-name" content="Sameer's PortFolio" />
 
-    <link rel="apple-touch-icon" sizes="57x57" href="./icons/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="./icons/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="./icons/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="./icons/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="./icons/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="./icons/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="./icons/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="./icons/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="./icons/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16x16.png">
-    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="./icons/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
     <meta name="theme-color" content="#000000">
 
     <link
@@ -43,8 +43,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
 
     <title>Sameer's Portfolio</title>
-    <script type="module" crossorigin src="./assets/index-DcTer8zP.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CnkDy4KG.css">
+
+    <script>
+      // Clean-URL routing on GitHub Pages (spa-github-pages pattern).
+      // 1) Forward legacy hash links: /#/contact -> /contact
+      // 2) Decode the ?/path redirect that 404.html produces for deep links.
+      (function () {
+        var l = window.location;
+        if (l.hash.indexOf("#/") === 0) {
+          l.replace(l.origin + l.hash.slice(1));
+          return;
+        }
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(null, null, decoded + l.hash);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DPk3pvNB.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D3RKz47L.css">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
