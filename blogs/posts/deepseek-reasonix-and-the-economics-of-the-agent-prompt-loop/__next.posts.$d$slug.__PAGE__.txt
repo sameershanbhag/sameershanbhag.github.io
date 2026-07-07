@@ -1,0 +1,60 @@
+1:"$Sreact.fragment"
+2:I[106,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],""]
+6:I[97172,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+3:T132d,<h2>The cost hiding inside every agent turn</h2>
+
+<p>Every turn of a coding agent session re-sends some version of the same material: a system prompt, a block of repo context, then the conversation history to date. If the model charges full input-token price on each uncached call, that overhead is paid on every single turn. Sessions run long. The bills add up faster than the diff output does.</p>
+
+<h2>What the KV cache is and why it breaks</h2>
+
+<p>Most LLM APIs maintain a KV cache: the model’s running record of attention computations for tokens it has already processed. When your request begins with a prefix that matches what’s already cached, the model skips recomputing those tokens and charges a reduced read price. Conceptually it’s similar to a function memoizing its intermediate results — but only when the inputs are identical from the start.</p>
+
+<p>The cache is prefix-sensitive. The moment any token near the start of your prompt changes — a freshly formatted timestamp, a shuffled list of retrieved file paths, a dynamic instruction injected into the system prompt — the cache invalidates from that position forward. Every token after that point is recomputed at full cost. You’re back to paying as if the session just started.</p>
+
+<h2>What DeepSeek released</h2>
+
+<p>On May 24, 2026, DeepSeek released Reasonix, described as a “native coding agent” built around its KV cache architecture. It’s worth separating the product layers: V4 Pro is DeepSeek’s underlying model SKU (its price discount was made permanent around the same time); Reasonix is an agent product built on top of it, co-designed with the model’s caching behavior as a first-class constraint. The project page at <a href="https://esengine.github.io/DeepSeek-Reasonix/" rel="noopener noreferrer">esengine.github.io/DeepSeek-Reasonix</a> is light on benchmark numbers, so this piece works from the architectural framing rather than specific figures.</p>
+
+<h2>How the mechanism works</h2>
+
+<p>Prefix caching works only when the beginning of a prompt stays byte-identical across calls. Based on DeepSeek’s framing, “native” agent design means the scaffolding is built so the stable prefix — system prompt plus repo context — is frozen and placed first, with each new conversation turn appended at the tail.</p>
+
+<p>Non-native agents often reconstruct the full prompt each turn in ways that shift the prefix. A common example: injecting the current timestamp or a dynamically sampled few-shot example into the system prompt, then concatenating history beneath it. The prefix shifts, the cache misses, and you pay for full recomputation.</p>
+
+<p>A note before the snippet: DeepSeek model slugs change on new releases — verify the correct slug at platform.deepseek.com before use. The pattern below uses <code>deepseek-reasoner</code> as a placeholder consistent with Reasonix's reasoner framing, but treat it as illustrative.</p>
+
+<pre><code class="language-python"> # Pattern: freeze the stable prefix; append new turns at the tail.
+ import openai
+
+ client = openai.OpenAI(
+     api_key="YOUR_DEEPSEEK_KEY",
+     base_url="https://api.deepseek.com/v1",
+ )
+
+ SYSTEM_PREFIX = "You are a coding agent.\n\nRepo context:\n" + load_repo_context()
+
+ def agent_turn(history: list[dict], user_msg: str) -&gt; str:
+     messages = [{"role": "system", "content": SYSTEM_PREFIX}] + history
+     messages.append({"role": "user", "content": user_msg})
+     resp = client.chat.completions.create(
+         model="deepseek-reasoner",  # verify current slug at platform.deepseek.com
+         messages=messages,
+     )
+     return resp.choices[0].message.content</code></pre>
+
+<p><code>SYSTEM_PREFIX</code> is computed once and never mutated across the session. History is appended at the tail. The cached region grows as wide as possible.</p>
+
+<h2>What this changes — and what it gives up</h2>
+
+<p>Once the prefix is cached, you pay only for the net-new tokens on each turn. The per-turn cost curve flattens as sessions grow longer relative to the stable prefix, which is exactly the shape you want for a long coding session with a large, static repo context.</p>
+
+<p>The tradeoff is prompt rigidity. You cannot inject per-turn context near the top of the prompt — no live timestamps, no dynamic persona injection, no reordered retrieval results — without triggering a cache miss. Dynamic prompting and cache efficiency are in direct tension. Reasonix’s architectural bet is that for coding agents specifically, the system prompt and repo context are stable enough turn-to-turn that this constraint pays off.</p>
+
+<p>How you order context inside an agent prompt is now an economic decision with a measurable cost function — not a style choice.</p>
+
+<p>Source: <a href="https://esengine.github.io/DeepSeek-Reasonix/" rel="noopener noreferrer">https://esengine.github.io/DeepSeek-Reasonix/</a></p>
+0:{"rsc":["$","$1","c",{"children":[["$","article",null,{"className":"mx-auto max-w-3xl px-5 pt-14 pb-10","children":[["$","header",null,{"children":[["$","div",null,{"className":"flex items-center gap-3 text-sm text-muted","children":[["$","time",null,{"dateTime":"2026-05-25","children":"May 25, 2026"}],["$","span",null,{"aria-hidden":true,"className":"w-1 h-1 rounded-full bg-accent-mid"}],["$","span",null,{"children":[3," min read"]}]]}],["$","h1",null,{"className":"mt-4 text-3xl sm:text-[2.75rem] font-bold leading-tight tracking-tight","children":"DeepSeek Reasonix and the Economics of the Agent Prompt Loop"}],["$","p",null,{"className":"mt-4 text-xl text-muted leading-relaxed","children":"Why 'native' KV-cache design in a coding agent makes context ordering a first-class engineering constraint, not an afterthought."}],["$","div",null,{"className":"mt-6 flex flex-wrap gap-2","children":[["$","$L2","ai",{"href":"/tags/ai/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["ai",false]}],["$","$L2","agents",{"href":"/tags/agents/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["agents",false]}],["$","$L2","llm-economics",{"href":"/tags/llm-economics/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["llm-economics",false]}]]}],["$","div",null,{"className":"mt-8 h-px bg-gradient-to-r from-accent-soft via-accent-mid to-transparent"}]]}],"$undefined",["$","div",null,{"className":"prose-engine mt-10","dangerouslySetInnerHTML":{"__html":"$3"}}],"$L4"]}],null,"$L5"]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_b7wOjY6aLZ1IyQQITfak"}
+4:["$","footer",null,{"className":"mt-16 rounded-2xl bg-surface border border-accent-soft/40 p-8 text-center","children":[["$","p",null,{"className":"font-logo text-2xl text-accent","children":"Sameer Shanbhag"}],["$","p",null,{"className":"mt-2 text-muted","children":["Thanks for reading. Find more of my work on"," ",["$","a",null,{"href":"https://sameershanbhag.com","className":"font-medium text-accent underline underline-offset-4 transition-colors duration-200 hover:text-ink","children":"sameershanbhag.com"}],"."]}],["$","$L2",null,{"href":"/","className":"mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 font-medium text-white transition-colors duration-200 hover:bg-ink","children":"← All posts"}]]}]
+5:["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]
+8:null

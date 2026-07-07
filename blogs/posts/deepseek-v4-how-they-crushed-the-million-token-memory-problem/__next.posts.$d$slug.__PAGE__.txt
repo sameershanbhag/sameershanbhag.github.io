@@ -1,0 +1,107 @@
+1:"$Sreact.fragment"
+2:I[106,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],""]
+6:I[97172,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+3:T2c99,<figure><img src="/blogs/images/deepseek-v4/architecture.jpeg" alt="DeepSeek V4 dual-path attention architecture" loading="lazy" /></figure>
+
+<h2>The problem nobody talks about</h2>
+
+<p>Everyone celebrates the headline number: one million tokens of context. But there's a cost hiding inside that number that makes most implementations impractical.</p>
+
+<p>The model has to <em>remember</em> every token it has ever seen. That memory — the running record of attention computations across every past token — is called the KV cache. It grows linearly with context length. At a million tokens, it becomes the bottleneck. Not compute. Not model size. Memory.</p>
+
+<p>DeepSeek V4 is the first architecture to solve this in a way that feels like it was designed from the ground up, not bolted on.</p>
+
+<p><em>(DeepSeek-V4-Pro: 1.6T total parameters, 49B activated, 1M token context. DeepSeek-V4-Flash: 284B total parameters, 13B activated, 1M token context. Both released April 2026.)</em></p>
+
+<h2>Two kinds of memory instead of one</h2>
+
+<p>Imagine you're reading a million-word book and someone asks you questions about it. Remembering every single sentence verbatim would break most people's brains. But good readers don't do that — they keep two kinds of memory running at once.</p>
+
+<p><strong>Memory type 1 — the "highlights" memory.</strong> Every few pages, you jot down a sticky note. You're compressing, but you're keeping enough detail that you can zoom back in when needed. When someone asks a specific question, you scan the sticky notes and open the right one.</p>
+
+<p><em>(This is Compressed Sparse Attention, or CSA. Every 4 tokens in the sequence get compressed into 1 KV entry via softmax-gated pooling. When processing a new query, a "lightning indexer" — running in FP4 with ReLU-scored multi-head dot products — selects only the top-k most relevant compressed blocks. A separate sliding-window branch keeps the most recent tokens fully uncompressed for recency.)</em></p>
+
+<p><strong>Memory type 2 — the "vibe" memory.</strong> Every hundred-or-so pages, you compress down to a single impression. Not details — just the feeling, the theme, the shape of that section. You can hold the whole book in your head this way without drowning in specifics.</p>
+
+<p><em>(This is Heavily Compressed Attention, or HCA. Every 128 tokens compress into 1 KV entry. Because the compression is so aggressive, the resulting sequence is tiny enough that the model can run full dense attention over all of it — no sparse selection needed. Same sliding-window branch handles recency.)</em></p>
+
+<p>The 61-layer model alternates between these two across its depth. Layers 0–1 run HCA only. Layers 2–60 alternate CSA and HCA. The final MTP block runs sliding-window only.</p>
+
+<p>The result: at a million-token context, V4-Pro needs only <strong>27% of V3.2's single-token inference FLOPs</strong> and <strong>10% of its KV cache</strong>. Compared to a standard BF16 GQA-8 baseline, the KV cache drops to roughly <strong>2%</strong>. That's not a rounding improvement. That's a different class of system.</p>
+
+<p><em>(The compound savings come from two multiplied factors: compression ratio (4x or 128x depending on layer type) × storage quantization (FP8 for most KV entries, FP4 for the indexer weights, BF16 only for RoPE dimensions which need precision). They multiply, not add.)</em></p>
+
+<h2>The skip connection problem nobody warned you about</h2>
+
+<p>There's a second problem that gets less attention: how do you keep signal stable when you're passing information through 61 layers?</p>
+
+<p>Picture passing a ball down a line of 61 kids. Without rules, two things can go wrong. Each kid makes the ball slightly louder — by kid 61, it's a scream. Or each kid makes it slightly quieter — by kid 61, it's silence. Both are catastrophic. The model stops learning.</p>
+
+<p>The standard fix since ResNet has been the residual connection: pass the original ball forward unchanged alongside whatever the kid does with it. That way even if one kid garbles it, the original still arrives. <em>(x → x + f(x). The skip connection ensures gradient flows back directly through the identity path.)</em></p>
+
+<p>DeepSeek V4 wanted more. They wanted the connection itself to be learnable — different layers, different mixing weights, more expressive information flow. But the moment you make the weights learnable with no constraints, you're back to the screaming kid problem.</p>
+
+<p><strong>Their fix: make the weights always look like a fair redistribution. No amplification allowed.</strong></p>
+
+<p>Here's the simplest way to see it. Imagine you have buckets of water. You're allowed to pour between buckets however you like, but two rules must hold: 1. Every bucket you pour <em>from</em> ends up completely empty — you used all of it. 2. Every bucket you pour <em>into</em> ends up exactly full — no overflow, no shortage.</p>
+
+<p>You can redistribute however you want. But you cannot create water or lose water.</p>
+
+<p><em>(This is a doubly stochastic matrix: every row sums to 1, every column sums to 1. The Birkhoff polytope is the mathematical "shape" containing all valid doubly stochastic matrices — i.e., all valid redistribution patterns.)</em></p>
+
+<p>The algorithm that enforces this during training is beautifully simple: take your weight matrix, normalize each row so it sums to 1, then normalize each column so it sums to 1, repeat a handful of times. It converges fast.</p>
+
+<p><em>(This is the Sinkhorn-Knopp algorithm. Each round of alternating row-then-column normalization moves the matrix closer to the Birkhoff polytope. ~5–10 iterations is enough in practice.)</em></p>
+
+<p>Why does "no water created or lost" prevent explosion? Because a transformation that only redistributes — never amplifies — can stretch any signal by at most a factor of 1. Not 1.1. Exactly 1. Multiply sixty-one of those matrices together and you never blow up, no matter how deep.</p>
+
+<p><em>(Spectral norm of a doubly stochastic matrix is bounded to ≤ 1. Spectral norm is the maximum factor by which a matrix can stretch any input vector. Bounding it to 1 eliminates explosion in both the forward pass and the backward gradient pass.)</em></p>
+
+<p>This is what DeepSeek calls <strong>Manifold-Constrained Hyper-Connections (mHC)</strong>. Learnable skip connections, locked inside a shape where the only legal move is "redistribute, don't amplify," enforced cheaply at every training step via Sinkhorn-Knopp.</p>
+
+<h2>The agentic thinking trick that matters most</h2>
+
+<p>Here's the one that's easy to miss but is the most practically significant for anyone building agents.</p>
+
+<p>A normal model forgets its reasoning between your messages. You ask it something, it thinks, it answers, the thinking is gone. You ask again, it starts fresh. For a chatbot, that's fine.</p>
+
+<p>For an agent running a multi-step job — calling tools, getting results, planning the next step — that's a serious problem. The model has to re-derive its reasoning from scratch every turn, even when nothing has changed about the overall plan.</p>
+
+<p>V4 keeps its scratchpad alive across user messages — but <em>only</em> when tool calls are present in the conversation. In pure conversation mode, the thinking is still flushed for brevity.</p>
+
+<p><em>(When tool calls are present, </em><code><em>&lt;think&gt;</em></code><em> blocks are preserved across user message boundaries and appended to the context as the conversation continues. In standard conversational turns, they're discarded. This is an explicit architectural decision in the post-training protocol, not a prompt engineering trick.)</em></p>
+
+<p>A real assistant doing a multi-step job shouldn't have to re-figure out what it was doing every time it reports back to you. This is V4 formalizing that at the model level.</p>
+
+<p>The tool call format changed too — away from JSON-in-string (which breaks on nested quotes) to a typed XML schema with an explicit <code>string</code> flag separating string parameters from structured JSON parameters. Less fragile under the kinds of nested-quote situations that regularly break agent pipelines.</p>
+
+<h2>How they trained the reasoning at scale</h2>
+
+<p>Teaching a model to use tools correctly requires actually running the tools. That means running hundreds of thousands of sandboxed environments simultaneously during RL training — each one a little world where the model tries something and gets graded on the result.</p>
+
+<p>DeepSeek built the infrastructure for this from scratch, in Rust, and called it <strong>DSec (DeepSeek Elastic Compute)</strong>. It runs across four substrate types behind a single Python SDK: plain functions, containers, Firecracker microVMs, and full QEMU virtual machines. You pick the isolation level based on what the task requires; the API doesn't change.</p>
+
+<p>The detail that makes this work at RL scale: if training gets interrupted mid-rollout, the system replays the trajectory safely rather than re-executing tool calls from scratch. That matters because re-running a tool call mid-sequence can corrupt the training signal — the result at step 3 shouldn't change just because training resumed from a checkpoint.</p>
+
+<p><em>(Preemption-safe trajectory replay via 3FS layered storage. Fast container loading means no startup delay between RL rollout episodes. The system ran at hundreds of thousands of concurrent sandboxes during V4 training.)</em></p>
+
+<h2>What the benchmarks actually say</h2>
+
+<figure><img src="/blogs/images/deepseek-v4/benchmarks.jpeg" alt="DeepSeek V4 benchmark results" loading="lazy" /></figure>
+
+<p>V4-Pro-Max competitive results at release: -</p>
+
+<ol><li><strong>SWE-bench Verified</strong>: 80.6% (on par with Opus-4.6-Max at 80.8%)</li><li><strong>LiveCodeBench</strong>: 93.5% - <strong>Codeforces Rating</strong>: 3206 — among the highest reported</li><li><strong>1M-token MRCR (multi-needle retrieval)</strong>: 83.5 mean MRR, outperforming Gemini-3.1-Pro at 76.3</li><li><strong>MRCR accuracy at 256K tokens</strong>: &gt;0.82; drops to 0.59 at 1M — honest about the degradation curve</li></ol>
+
+<p>The interesting engineering question isn't "can a model process a million tokens." It's "can it do so without the cost making the architecture economically unviable."</p>
+
+<p>V4 answers that question architecturally. The KV cache compression is not a serving trick — it's baked into the attention design. The interleaved thinking is not a prompt template — it's a post-training decision about when reasoning state gets preserved. The DSec infra is not an inference optimization — it's the training system that made the agentic capabilities possible.</p>
+
+<p>The three things most worth understanding in this paper: the dual-path attention mechanism and how compression ratios compound with quantization; the Birkhoff polytope constraint on residual connections and why it buys stability for free; and the interleaved thinking decision and what it means for how you design multi-turn agent turns.</p>
+
+<p><em>Source: DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence (April 2026). Technical report available via </em><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro" rel="noopener noreferrer"><em>huggingface.co/deepseek-ai/DeepSeek-V4-Pro</em></a><em>.</em></p>
+0:{"rsc":["$","$1","c",{"children":[["$","article",null,{"className":"mx-auto max-w-3xl px-5 pt-14 pb-10","children":[["$","header",null,{"children":[["$","div",null,{"className":"flex items-center gap-3 text-sm text-muted","children":[["$","time",null,{"dateTime":"2026-05-29","children":"May 29, 2026"}],["$","span",null,{"aria-hidden":true,"className":"w-1 h-1 rounded-full bg-accent-mid"}],["$","span",null,{"children":[7," min read"]}]]}],["$","h1",null,{"className":"mt-4 text-3xl sm:text-[2.75rem] font-bold leading-tight tracking-tight","children":"DeepSeek V4: How They Crushed the Million-Token Memory Problem"}],["$","p",null,{"className":"mt-4 text-xl text-muted leading-relaxed","children":"A million-token context window sounds impressive. Making it cheap enough to actually use is the hard part — and the engineering behind it is worth understanding properly."}],["$","div",null,{"className":"mt-6 flex flex-wrap gap-2","children":[["$","$L2","ai",{"href":"/tags/ai/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["ai",false]}],["$","$L2","deepseek",{"href":"/tags/deepseek/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["deepseek",false]}],["$","$L2","architecture",{"href":"/tags/architecture/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["architecture",false]}]]}],["$","div",null,{"className":"mt-8 h-px bg-gradient-to-r from-accent-soft via-accent-mid to-transparent"}]]}],"$undefined",["$","div",null,{"className":"prose-engine mt-10","dangerouslySetInnerHTML":{"__html":"$3"}}],"$L4"]}],null,"$L5"]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_b7wOjY6aLZ1IyQQITfak"}
+4:["$","footer",null,{"className":"mt-16 rounded-2xl bg-surface border border-accent-soft/40 p-8 text-center","children":[["$","p",null,{"className":"font-logo text-2xl text-accent","children":"Sameer Shanbhag"}],["$","p",null,{"className":"mt-2 text-muted","children":["Thanks for reading. Find more of my work on"," ",["$","a",null,{"href":"https://sameershanbhag.com","className":"font-medium text-accent underline underline-offset-4 transition-colors duration-200 hover:text-ink","children":"sameershanbhag.com"}],"."]}],["$","$L2",null,{"href":"/","className":"mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 font-medium text-white transition-colors duration-200 hover:bg-ink","children":"← All posts"}]]}]
+5:["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]
+8:null

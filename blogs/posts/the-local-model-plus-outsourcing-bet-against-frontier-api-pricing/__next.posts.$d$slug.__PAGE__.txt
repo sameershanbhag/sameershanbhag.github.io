@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:I[106,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],""]
+6:I[97172,["/blogs/_next/static/chunks/0ecm_v7oq2he~.js","/blogs/_next/static/chunks/01s5.0k4zat9d.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+3:Te30,<h2>What stopped me</h2>
+
+<p>I came across a piece this morning claiming that combining outsourcing with local AI inference will soon be more economical than paying frontier lab API prices. That’s a fairly bold claim, and the HN thread had close to 300 comments. The discussion was split between people who’d already tried something like this and people pointing out the parts the article glosses over, which usually means there’s a real tension worth unpacking.</p>
+
+<p>The source itself is thin on specifics. No benchmark numbers, no traffic distribution assumptions, no named models or providers. So most of what follows is me working through the implied architecture based on how these systems are actually priced and deployed.</p>
+
+<h2>The basic cost structure</h2>
+
+<p>Frontier model APIs, the GPT-4o or Claude Sonnet tiers, charge per token on every request. The upside is zero infrastructure overhead, immediate scale, and consistently strong performance. The downside is you pay that per-token rate even for the boring, repetitive tasks your system handles a hundred times a day.</p>
+
+<p>Local models (open-weight models you self-host, on a GPU cluster or via something like Ollama on commodity hardware) flip that structure. Once infrastructure is amortized, the marginal cost per token is near zero. The breakeven point depends heavily on request volume, hardware cost, and how well your workload fits the model’s training distribution. The problem beyond cost is quality: current local models are noticeably weaker on ambiguous, multi-step, or domain-specific tasks. They are not a drop-in replacement.</p>
+
+<h2>Where outsourcing enters</h2>
+
+<p>The argument is essentially: use a local model for the easy majority of your traffic, and route the hard cases to human workers. The combined cost of local inference plus occasional human review is claimed to undercut the cost of running everything through a frontier API.</p>
+
+<p>This is not a new pattern. The practice of routing low-confidence outputs to human reviewers has been around since early ML pipelines. The framing here is different though: presenting it as a deliberate cost architecture you’d design toward from the start, rather than a fallback when the model fails.</p>
+
+<h2>What I’m still working through</h2>
+
+<p>The part that kept snagging for me is latency. A human-in-the-loop fallback adds latency on exactly the cases that need the most help. If your application can tolerate asynchronous handling for the hard inputs, that’s workable. But a lot of production agentic systems cannot queue the tricky requests and come back to them later. The use cases where you’d most want frontier-level performance tend to be the same ones where a 10 to 30 second human review turnaround would break the product.</p>
+
+<p>I’m also not settled on whether bundling outsourcing and local AI actually changes the economics or just changes the framing. The routing logic, the complexity classifier, and the fallback infrastructure all have real costs that don’t appear in a back-of-envelope comparison at average token price. And if the classifier is poorly calibrated, routing too many easy cases to humans, the cost advantage could flip quickly.</p>
+
+<p>I’d want to actually model it out for a realistic traffic distribution before treating the comparison as settled.</p>
+
+<p>Source: <a href="https://www.signalbloom.ai/posts/outsourcing-plus-localai-will-soon-become-more-economical-vs-frontier-labs/" rel="noopener noreferrer">https://www.signalbloom.ai/posts/outsourcing-plus-localai-will-soon-become-more-economical-vs-frontier-labs/</a></p>
+0:{"rsc":["$","$1","c",{"children":[["$","article",null,{"className":"mx-auto max-w-3xl px-5 pt-14 pb-10","children":[["$","header",null,{"children":[["$","div",null,{"className":"flex items-center gap-3 text-sm text-muted","children":[["$","time",null,{"dateTime":"2026-05-28","children":"May 28, 2026"}],["$","span",null,{"aria-hidden":true,"className":"w-1 h-1 rounded-full bg-accent-mid"}],["$","span",null,{"children":[2," min read"]}]]}],["$","h1",null,{"className":"mt-4 text-3xl sm:text-[2.75rem] font-bold leading-tight tracking-tight","children":"The Local Model Plus Outsourcing Bet Against Frontier API Pricing"}],["$","p",null,{"className":"mt-4 text-xl text-muted leading-relaxed","children":"Working through the cost architecture and where the latency math gets messy."}],["$","div",null,{"className":"mt-6 flex flex-wrap gap-2","children":[["$","$L2","ai",{"href":"/tags/ai/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["ai",false]}],["$","$L2","local-models",{"href":"/tags/local-models/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["local-models",false]}],["$","$L2","llm-economics",{"href":"/tags/llm-economics/","className":"inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent hover:text-white","children":["llm-economics",false]}]]}],["$","div",null,{"className":"mt-8 h-px bg-gradient-to-r from-accent-soft via-accent-mid to-transparent"}]]}],"$undefined",["$","div",null,{"className":"prose-engine mt-10","dangerouslySetInnerHTML":{"__html":"$3"}}],"$L4"]}],null,"$L5"]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_b7wOjY6aLZ1IyQQITfak"}
+4:["$","footer",null,{"className":"mt-16 rounded-2xl bg-surface border border-accent-soft/40 p-8 text-center","children":[["$","p",null,{"className":"font-logo text-2xl text-accent","children":"Sameer Shanbhag"}],["$","p",null,{"className":"mt-2 text-muted","children":["Thanks for reading. Find more of my work on"," ",["$","a",null,{"href":"https://sameershanbhag.com","className":"font-medium text-accent underline underline-offset-4 transition-colors duration-200 hover:text-ink","children":"sameershanbhag.com"}],"."]}],["$","$L2",null,{"href":"/","className":"mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 font-medium text-white transition-colors duration-200 hover:bg-ink","children":"← All posts"}]]}]
+5:["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]
+8:null

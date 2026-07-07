@@ -12,5 +12,33 @@
       <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
       <description>Why I store posts as plain HTML in git, and how a small design engine turns any markup into a page that matches my portfolio.</description>
     </item>
+    <item>
+      <title>DeepSeek V4: How They Crushed the Million-Token Memory Problem</title>
+      <link>https://sameershanbhag.com/blogs/posts/deepseek-v4-how-they-crushed-the-million-token-memory-problem/</link>
+      <guid>https://sameershanbhag.com/blogs/posts/deepseek-v4-how-they-crushed-the-million-token-memory-problem/</guid>
+      <pubDate>Fri, 29 May 2026 00:00:00 GMT</pubDate>
+      <description>A million-token context window sounds impressive. Making it cheap enough to actually use is the hard part — and the engineering behind it is worth understanding properly.</description>
+    </item>
+    <item>
+      <title>The Local Model Plus Outsourcing Bet Against Frontier API Pricing</title>
+      <link>https://sameershanbhag.com/blogs/posts/the-local-model-plus-outsourcing-bet-against-frontier-api-pricing/</link>
+      <guid>https://sameershanbhag.com/blogs/posts/the-local-model-plus-outsourcing-bet-against-frontier-api-pricing/</guid>
+      <pubDate>Thu, 28 May 2026 00:00:00 GMT</pubDate>
+      <description>Working through the cost architecture and where the latency math gets messy.</description>
+    </item>
+    <item>
+      <title>The AI Coding Metric Nobody Has Actually Measured</title>
+      <link>https://sameershanbhag.com/blogs/posts/the-ai-coding-metric-nobody-has-actually-measured/</link>
+      <guid>https://sameershanbhag.com/blogs/posts/the-ai-coding-metric-nobody-has-actually-measured/</guid>
+      <pubDate>Tue, 26 May 2026 00:00:00 GMT</pubDate>
+      <description>Nolan Lawson's post made me realize why 'better code' never got the marketing that 'faster code' did.</description>
+    </item>
+    <item>
+      <title>DeepSeek Reasonix and the Economics of the Agent Prompt Loop</title>
+      <link>https://sameershanbhag.com/blogs/posts/deepseek-reasonix-and-the-economics-of-the-agent-prompt-loop/</link>
+      <guid>https://sameershanbhag.com/blogs/posts/deepseek-reasonix-and-the-economics-of-the-agent-prompt-loop/</guid>
+      <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
+      <description>Why 'native' KV-cache design in a coding agent makes context ordering a first-class engineering constraint, not an afterthought.</description>
+    </item>
   </channel>
 </rss>
