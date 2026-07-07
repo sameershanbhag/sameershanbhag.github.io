@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sameer Shanbhag — Blog</title>
+    <link>https://sameershanbhag.com/blogs</link>
+    <description>Writing on software engineering, AI, and whatever else I'm building.</description>
+    <language>en-us</language>
+    <item>
+      <title>Hello, world — this blog is HTML all the way down</title>
+      <link>https://sameershanbhag.com/blogs/posts/hello-world/</link>
+      <guid>https://sameershanbhag.com/blogs/posts/hello-world/</guid>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Why I store posts as plain HTML in git, and how a small design engine turns any markup into a page that matches my portfolio.</description>
+    </item>
+  </channel>
+</rss>
