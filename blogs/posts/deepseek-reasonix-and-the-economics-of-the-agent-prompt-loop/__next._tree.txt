@@ -1,6 +1,6 @@
-:HL["/blogs/_next/static/chunks/074avt21my8lf.css","style"]
+:HL["/blogs/_next/static/chunks/186~kpj54u3p~.css","style"]
 :HL["/blogs/_next/static/media/Agustina-s.p.05nso1g-pcxu-.woff","font",{"crossOrigin":"","type":"font/woff"}]
 :HL["/blogs/_next/static/media/GoogleSans_Bold-s.p.0dwz18vlto2.8.ttf","font",{"crossOrigin":"","type":"font/ttf"}]
 :HL["/blogs/_next/static/media/GoogleSans_Medium-s.p.13pd_6howu09k.ttf","font",{"crossOrigin":"","type":"font/ttf"}]
 :HL["/blogs/_next/static/media/GoogleSans_Regular-s.p.0h-d1ezpwrjne.ttf","font",{"crossOrigin":"","type":"font/ttf"}]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"posts","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"deepseek-reasonix-and-the-economics-of-the-agent-prompt-loop","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"-xLhiEpkwKn46CP-mCakl"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"posts","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"deepseek-reasonix-and-the-economics-of-the-agent-prompt-loop","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"d4TXa2UKhbnTjj2-KAGaE"}
